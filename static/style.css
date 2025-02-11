@@ -1,0 +1,61 @@
+/* style.css */
+
+/* Global Styles */
+body {
+    background-color: #e0f7fa;  /* Light cyan background (blueish) */
+    font-family: Arial, sans-serif;
+    color: #333;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Headings */
+  h1, h2 {
+    color: #00796b;  /* Teal green for headings */
+    text-align: center;
+  }
+  
+  /* Links */
+  a {
+    color: #1565c0;  /* Blue for links */
+    text-decoration: none;
+  }
+  
+  a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Container */
+  .container {
+    width: 80%;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #b3e5fc;  /* Light blue container background */
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  
+  /* Form Styles */
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  input, button {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  /* Button Styles */
+  button {
+    background-color: #00796b;  /* Teal green button */
+    color: #fff;
+    border: none;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #004d40;  /* Darker green on hover */
+  }
+  

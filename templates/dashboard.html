@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome, {{ user.full_name }}!</h1>
+    <p>Role: {{ user.user_type }}</p>
+    <p>Email: {{ user.email }}</p>
+    <p>Phone: {{ user.phone_number }}</p>
+    
+    <h2>Notifications</h2>
+    <p>No new notifications at this time.</p>
+    
+    <!-- Link to Edit Profile -->
+    <p><a href="/edit_profile">Edit Profile</a></p>
+    
+    <!-- Logout Link -->
+    <p><a href="/logout">Log Out</a></p>
+  </div>
+</body>
+</html>
