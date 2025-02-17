@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: Job-and-Skill-Matcher
+    env: python
+    region: oregon  # or your preferred region
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn main:app
+    plan: free
