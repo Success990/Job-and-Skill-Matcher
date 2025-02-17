@@ -8,17 +8,34 @@
 </head>
 <body>
     <div class="container">
-        <h1>Edit Profile</h1>
-        <form action="/edit_profile" method="POST">
-            <label for="full_name">Full Name:</label><br>
-            <input type="text" name="full_name" value="{{ user.full_name }}" required><br>
+        <!-- Header Section -->
+        <header>
+            <h1>Edit Profile</h1>
+            <p>Update your profile information below.</p>
+        </header>
+        
+        <!-- Edit Profile Form -->
+        <form action="/edit_profile" method="POST" class="edit-profile-form">
+            <!-- Full Name Input -->
+            <div class="form-group">
+                <label for="full_name">Full Name:</label>
+                <input type="text" id="full_name" name="full_name" value="{{ user.full_name }}" required>
+            </div>
             
-            <label for="phone_number">Phone Number:</label><br>
-            <input type="text" name="phone_number" value="{{ user.phone_number }}" required><br>
+            <!-- Phone Number Input -->
+            <div class="form-group">
+                <label for="phone_number">Phone Number:</label>
+                <input type="text" id="phone_number" name="phone_number" value="{{ user.phone_number }}" required>
+            </div>
             
-            <button type="submit">Update Profile</button>
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary">Update Profile</button>
         </form>
-        <p><a href="/dashboard">Back to Dashboard</a></p>
+
+        <!-- Back to Dashboard Link -->
+        <footer>
+            <p><a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a></p>
+        </footer>
     </div>
 </body>
 </html>
