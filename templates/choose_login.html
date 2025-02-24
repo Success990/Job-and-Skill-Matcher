@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Choose Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h2>Login</h2>
+      <p>Please choose your login type:</p>
+    </header>
+    
+    <section class="login-options">
+      <p><a href="/login/job_seeker" class="btn btn-primary">Job Seeker Login</a></p>
+      <p><a href="/login/employer" class="btn btn-secondary">Employer Login</a></p>
+    </section>
+    
+    <footer>
+      <p>Don't have an account? <a href="/choose_signup">Sign up here</a></p>
+    </footer>
+  </div>
+</body>
+</html>

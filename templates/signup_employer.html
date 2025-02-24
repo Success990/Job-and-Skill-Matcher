@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employer Signup</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h2>Employer Signup</h2>
+      <p>Register your firm by filling out the form below.</p>
+    </header>
+    
+    <!-- Flash messages for errors or success -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <section class="flash-messages">
+          {% for category, message in messages %}
+            <p class="{{ category }}">{{ message }}</p>
+          {% endfor %}
+        </section>
+      {% endif %}
+    {% endwith %}
+    
+    <section class="signup-form">
+      <form action="/signup/employer" method="POST">
+        <div class="form-group">
+          <label for="firm_name">Firm Name:</label>
+          <input type="text" id="firm_name" name="firm_name" placeholder="Enter your firm's name" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email Address (lowercase only):</label>
+          <input type="email" id="email" name="email" placeholder="Enter your email in lowercase" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input type="password" id="password" name="password" placeholder="At least 8 characters, 1 number" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="phone_number">Phone Number:</label>
+          <input type="text" id="phone_number" name="phone_number" placeholder="Enter your phone number" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="firm_description">Firm Description:</label>
+          <textarea id="firm_description" name="firm_description" placeholder="Describe your firm and the kind of employees you need" required></textarea>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Sign Up</button>
+      </form>
+    </section>
+    
+    <footer>
+      <p>Already have an account? <a href="/choose_login">Login here</a></p>
+    </footer>
+  </div>
+</body>
+</html>

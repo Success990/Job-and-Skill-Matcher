@@ -1,41 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Profile</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Profile</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <!-- Header Section -->
-        <header>
-            <h1>Edit Profile</h1>
-            <p>Update your profile information below.</p>
-        </header>
-        
-        <!-- Edit Profile Form -->
-        <form action="/edit_profile" method="POST" class="edit-profile-form">
-            <!-- Full Name Input -->
-            <div class="form-group">
-                <label for="full_name">Full Name:</label>
-                <input type="text" id="full_name" name="full_name" value="{{ user.full_name }}" required>
-            </div>
-            
-            <!-- Phone Number Input -->
-            <div class="form-group">
-                <label for="phone_number">Phone Number:</label>
-                <input type="text" id="phone_number" name="phone_number" value="{{ user.phone_number }}" required>
-            </div>
-            
-            <!-- Submit Button -->
-            <button type="submit" class="btn btn-primary">Update Profile</button>
-        </form>
-
-        <!-- Back to Dashboard Link -->
-        <footer>
-            <p><a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a></p>
-        </footer>
-    </div>
-</body>
-</html>
+  <div class="container">
+    <header>
+      <h1>Edit Profile</h1>
+      <p>Update your profile information below.</p>
+    </header>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <p class="{{ category }}">{{ message }}</p>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    <form action="/edit_profile" method="POST" class="edit-profile-form">
+      {% if user.user_type == 'job_seeker' %}  
+        <label>Full Name:</label>
+        <input type="text" name="full_name" value="{{ user.full_name }}" required><br>
+        <label>Phone Number:</label>
+        <input type="text" name="phone_number" value="{{ user.phone_number }}" required><br>
+        <label>Job Interest:</label>
+        <input type="text" name="job_interest" value="{{ user.job_interest }}" required><br>
+        <label>Qualification:</label>
+        <input type="text" name="qualification" value="{{ user.qualification }}" required><br>
+      {% else %}  
+        <label>Firm Name:</label>
+        <input type="text" name="firm_name" value="{{ user.full_name }}" required><br>
+        <label>Phone Number:</label>
+        <input type="text" name="phone_number" value="{{ user.phone_number }}" required><br>
+        <label>Firm Description:</label>
+        <textarea name="firm_description" required>{{ user.firm_description }}</textarea><br>
+      {% endif %}\n      <button type="submit" class="btn btn-primary">Update Profile</button>\n    </form>\n    <p><a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a></p>\n  </div>\n</body>\n</html>\n"
