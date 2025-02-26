@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Seeker Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Welcome, {{ user.full_name }}!</h1>
+      <p><strong>Role:</strong> Job Seeker</p>
+      <p><strong>Email:</strong> {{ user.email }}</p>
+      <p><strong>Phone:</strong> {{ user.phone_number }}</p>
+    </header>
+
+    <!-- Notifications Section -->
+    <section class="notifications">
+      <h2>Job Notifications</h2>
+      {% if job_notifications %}
+        <ul>
+          {% for job in job_notifications %}
+            <li>
+              <strong>{{ job.firm_name }}</strong> - {{ job.firm_description }} <br>
+              <strong>Job Vacancy:</strong> {{ job.vacancy }}
+              <form action="{{ url_for('apply_for_job') }}" method="POST">
+                <input type="hidden" name="vacancy_id" value="{{ job.id }}">
+                <button type="submit" name="action" value="accept">Accept</button>
+                <button type="submit" name="action" value="decline">Decline</button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No new job vacancies at the moment.</p>
+      {% endif %}
+    </section>
+
+    <!-- Actions -->
+<section class="actions">
+    <p><a href="/edit_profile" class="btn btn-primary">Edit Profile</a></p>
+    <p><a href="/logout" class="btn btn-secondary">Log Out</a></p>
+    <p><a href="/delete_account" class="btn btn-danger">Delete Account</a></p>
+</section>
+  
+  </div>
+</body>
+</html>

@@ -4,7 +4,7 @@ from datetime import timedelta
 import sqlite3
 
 app = Flask(__name__)
-app.secret_key = "your-secret-key"  # Change this to a secure key in production
+app.secret_key = "your-secret-key"  # Change this in production
 app.permanent_session_lifetime = timedelta(days=30)
 
 # Database helper functions
@@ -16,6 +16,8 @@ def get_db_connection():
 def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
+    
+    # Create users table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -29,162 +31,245 @@ def init_db():
             firm_description TEXT
         )
     ''')
+    
+    # Create vacancies table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS vacancies (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            employer_email TEXT NOT NULL,
+            firm_name TEXT NOT NULL,
+            firm_description TEXT NOT NULL,
+            vacancy TEXT NOT NULL,
+            ideal_jobseeker TEXT DEFAULT NULL,
+            FOREIGN KEY (employer_email) REFERENCES users (email)
+        )
+    ''')
+    
+    # Create applications table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS applications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            job_seeker_email TEXT NOT NULL,
+            job_seeker_name TEXT NOT NULL,
+            qualification TEXT NOT NULL,
+            phone_number TEXT NOT NULL,
+            vacancy_id INTEGER NOT NULL,
+            employer_email TEXT NOT NULL,
+            FOREIGN KEY (job_seeker_email) REFERENCES users (email),
+            FOREIGN KEY (vacancy_id) REFERENCES vacancies (id)
+        )
+    ''')
+    
     conn.commit()
     conn.close()
 
 init_db()
 
-# Route to choose signup type
+# ------------------ Routes ------------------
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
 @app.route('/choose_signup')
 def choose_signup():
-    return render_template('choose_signup.html')  # Offers links to /signup/job_seeker and /signup/employer
+    return render_template('choose_signup.html')
 
-# Job Seeker Signup Route
+@app.route('/choose_login')
+def choose_login():
+    return render_template('choose_login.html')
+
+# ------------------ Signup ------------------
+
 @app.route('/signup/job_seeker', methods=['GET', 'POST'])
 def signup_job_seeker():
     if request.method == 'POST':
         full_name = request.form['full_name']
-        email = request.form['email']
+        email = request.form['email'].lower()
         password = request.form['password']
         phone_number = request.form['phone_number']
         job_interest = request.form['job_interest']
         qualification = request.form['qualification']
-        
-        # Enforce email in lowercase
-        if email != email.lower():
-            flash("Invalid email: Email must be in all lowercase. Please re-enter your email in lowercase.", "error")
-            return redirect(url_for('signup_job_seeker'))
-        
-        # Check password requirements
+
         if len(password) < 8 or not any(char.isdigit() for char in password):
-            flash("Password must be at least 8 characters long and contain at least one number.", "error")
+            flash("Password must be at least 8 characters long and include a number.", "danger")
             return redirect(url_for('signup_job_seeker'))
-        
+
         hashed_password = generate_password_hash(password)
-        
+
+        conn = get_db_connection()
         try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            cursor.execute('''
-                INSERT INTO users (user_type, full_name, email, password, phone_number, job_interest, qualification)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', ("job_seeker", full_name, email, hashed_password, phone_number, job_interest, qualification))
+            conn.execute("INSERT INTO users (user_type, full_name, email, password, phone_number, job_interest, qualification) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                         ('job_seeker', full_name, email, hashed_password, phone_number, job_interest, qualification))
             conn.commit()
-            conn.close()
-            flash("Signup successful! Please log in.", "success")
+            flash("Signup successful! You can now log in.", "success")
             return redirect(url_for('login_job_seeker'))
         except sqlite3.IntegrityError:
-            flash("Email already exists. Please use a different email.", "error")
-            return redirect(url_for('signup_job_seeker'))
-        
+            flash("Email already exists. Please use a different email.", "danger")
+        finally:
+            conn.close()
+
     return render_template('signup_job_seeker.html')
 
-# Employer Signup Route
 @app.route('/signup/employer', methods=['GET', 'POST'])
 def signup_employer():
     if request.method == 'POST':
         firm_name = request.form['firm_name']
-        email = request.form['email']
+        email = request.form['email'].lower()
         password = request.form['password']
         phone_number = request.form['phone_number']
         firm_description = request.form['firm_description']
         
-        # Enforce email in lowercase
-        if email != email.lower():
-            flash("Invalid email: Email must be in all lowercase. Please re-enter your email in lowercase.", "error")
-            return redirect(url_for('signup_employer'))
-        
-        # Check password requirements
         if len(password) < 8 or not any(char.isdigit() for char in password):
             flash("Password must be at least 8 characters long and contain at least one number.", "error")
             return redirect(url_for('signup_employer'))
         
         hashed_password = generate_password_hash(password)
-        
+        conn = get_db_connection()
         try:
-            conn = get_db_connection()
             cursor = conn.cursor()
             cursor.execute('''
                 INSERT INTO users (user_type, full_name, email, password, phone_number, firm_description)
                 VALUES (?, ?, ?, ?, ?, ?)
             ''', ("employer", firm_name, email, hashed_password, phone_number, firm_description))
             conn.commit()
-            conn.close()
             flash("Signup successful! Please log in.", "success")
             return redirect(url_for('login_employer'))
         except sqlite3.IntegrityError:
             flash("Email already exists. Please use a different email.", "error")
             return redirect(url_for('signup_employer'))
-        
+        finally:
+            conn.close()
+    
     return render_template('signup_employer.html')
 
-# Route to choose login type
-@app.route('/choose_login')
-def choose_login():
-    return render_template('choose_login.html')  # Offers links to /login/job_seeker and /login/employer
 
-# Job Seeker Login Route
+# ------------------ Login ------------------
+
 @app.route('/login/job_seeker', methods=['GET', 'POST'])
 def login_job_seeker():
     if request.method == 'POST':
-        email = request.form['email']
+        email = request.form['email'].lower()
         password = request.form['password']
-        
+
         conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE email = ? AND user_type = ?", (email, "job_seeker"))
-        user = cursor.fetchone()
+        user = conn.execute("SELECT * FROM users WHERE email = ? AND user_type = 'job_seeker'", (email,)).fetchone()
         conn.close()
-        
-        if user and check_password_hash(user["password"], password):
-            session['user_email'] = user["email"]
-            session.permanent = True
-            return redirect(url_for('dashboard'))
-        flash("Invalid email or password.", "error")
-        return redirect(url_for('login_job_seeker'))
+
+        if user and check_password_hash(user['password'], password):
+            session['user'] = email
+            session['user_type'] = 'job_seeker'
+            return redirect(url_for('job_seeker_dashboard'))
+        else:
+            flash("Invalid email or password", "danger")
+
     return render_template('login_job_seeker.html')
 
-# Employer Login Route
 @app.route('/login/employer', methods=['GET', 'POST'])
 def login_employer():
     if request.method == 'POST':
-        email = request.form['email']
+        email = request.form['email'].lower()
         password = request.form['password']
-        
+
         conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE email = ? AND user_type = ?", (email, "employer"))
-        user = cursor.fetchone()
+        user = conn.execute("SELECT * FROM users WHERE email = ? AND user_type = 'employer'", (email,)).fetchone()
         conn.close()
-        
-        if user and check_password_hash(user["password"], password):
-            session['user_email'] = user["email"]
-            session.permanent = True
-            return redirect(url_for('dashboard'))
-        flash("Invalid email or password.", "error")
-        return redirect(url_for('login_employer'))
+
+        if user and check_password_hash(user['password'], password):
+            session['user'] = email
+            session['user_type'] = 'employer'
+            return redirect(url_for('employer_dashboard'))
+        else:
+            flash("Invalid email or password", "danger")
+
     return render_template('login_employer.html')
 
-# Dashboard route for both user types
-@app.route('/dashboard')
-def dashboard():
-    if 'user_email' not in session:
+# ------------------ Dashboards ------------------
+
+@app.route('/job_seeker/dashboard')
+def job_seeker_dashboard():
+    if 'user' in session and session.get('user_type') == 'job_seeker':
+        email = session['user']
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE email = ? AND user_type = 'job_seeker'", (email,))
+        user = cursor.fetchone()
+        # Fetch vacancies for the job seeker (or you can filter based on criteria later)
+        cursor.execute("SELECT * FROM vacancies")
+        vacancies = cursor.fetchall()
+        conn.close()
+        return render_template('job_seeker_dashboard.html', user=user, vacancies=vacancies)
+    return redirect(url_for('login_job_seeker'))
+
+
+@app.route('/employer/dashboard')
+def employer_dashboard():
+    # Check if a user is logged in and is an employer
+    if 'user' in session and session.get('user_type') == 'employer':
+        email = session['user']
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        # Retrieve the employer's record
+        cursor.execute("SELECT * FROM users WHERE email = ? AND user_type = ?", (email, "employer"))
+        user = cursor.fetchone()
+        if not user:
+            conn.close()
+            # If no user record is found, redirect to login
+            return redirect(url_for('login_employer'))
+        # Fetch vacancies posted by this employer
+        cursor.execute("SELECT * FROM vacancies WHERE employer_email = ?", (email,))
+        vacancies = cursor.fetchall()
+        # Fetch applications for vacancies posted by this employer
+        cursor.execute("SELECT * FROM applications WHERE employer_email = ?", (email,))
+        applications = cursor.fetchall()
+        conn.close()
+        return render_template('employer_dashboard.html', user=user, vacancies=vacancies, applications=applications)
+    else:
+        # If the session doesn't have the employer info, redirect to the employer login page
+        return redirect(url_for('login_employer'))
+
+@app.route('/post_job', methods=['GET', 'POST'])
+def post_job():
+    if 'user' not in session:
         return redirect(url_for('choose_login'))
-    email = session['user_email']
+    
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
+    cursor.execute("SELECT * FROM users WHERE email = ?", (session['user'],))
     user = cursor.fetchone()
+    
+    if user['user_type'] != 'employer':
+        flash("Only employers can post jobs.", "error")
+        conn.close()
+        return redirect(url_for('employer_dashboard'))
+    
+    if request.method == 'POST':
+        vacancy = request.form.get('vacancy')
+        ideal_jobseeker = request.form.get('ideal_jobseeker', '')
+        
+        if not vacancy:
+            flash("Job vacancy field is required.", "error")
+            conn.close()
+            return redirect(url_for('post_job'))
+        
+        cursor.execute('''
+            INSERT INTO vacancies (employer_email, firm_name, firm_description, vacancy, ideal_jobseeker)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (user['email'], user['full_name'], user['firm_description'], vacancy, ideal_jobseeker))
+        conn.commit()
+        flash("Job posted successfully!", "success")
+        conn.close()
+        return redirect(url_for('employer_dashboard'))
+    
     conn.close()
-    # Pass an empty activities list if no activities are tracked yet
-    return render_template('dashboard.html', user=user, activities=[])
+    return render_template('post_job.html')
 
-# Edit Profile route (changes based on user type)
+
 @app.route('/edit_profile', methods=['GET', 'POST'])
 def edit_profile():
-    if 'user_email' not in session:
+    if 'user' not in session:
         return redirect(url_for('choose_login'))
-    email = session['user_email']
+    email = session['user']
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
@@ -196,29 +281,65 @@ def edit_profile():
             phone_number = request.form.get('phone_number')
             job_interest = request.form.get('job_interest')
             qualification = request.form.get('qualification')
-            cursor.execute("UPDATE users SET full_name = ?, phone_number = ?, job_interest = ?, qualification = ? WHERE email = ?",
-                           (full_name, phone_number, job_interest, qualification, email))
+            cursor.execute(
+                "UPDATE users SET full_name = ?, phone_number = ?, job_interest = ?, qualification = ? WHERE email = ?",
+                (full_name, phone_number, job_interest, qualification, email)
+            )
         else:  # employer
             firm_name = request.form.get('firm_name')
             phone_number = request.form.get('phone_number')
             firm_description = request.form.get('firm_description')
-            cursor.execute("UPDATE users SET full_name = ?, phone_number = ?, firm_description = ? WHERE email = ?",
-                           (firm_name, phone_number, firm_description, email))
+            cursor.execute(
+                "UPDATE users SET full_name = ?, phone_number = ?, firm_description = ? WHERE email = ?",
+                (firm_name, phone_number, firm_description, email)
+            )
         conn.commit()
         conn.close()
         flash("Profile updated successfully!", "success")
-        return redirect(url_for('dashboard'))
+        # Redirect based on user type
+        if user['user_type'] == 'job_seeker':
+            return redirect(url_for('job_seeker_dashboard'))
+        else:
+            return redirect(url_for('employer_dashboard'))
     conn.close()
     return render_template('edit_profile.html', user=user)
+   
+@app.route('/delete_account', methods=['GET', 'POST'])
+def delete_account():
+    # Ensure the user is logged in
+    if 'user' not in session:
+        return redirect(url_for('choose_login'))
+    
+    email = session['user']
+    
+    if request.method == 'POST':
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        # Optionally, delete related records in vacancies or applications if needed
+        cursor.execute("DELETE FROM users WHERE email = ?", (email,))
+        conn.commit()
+        conn.close()
+        
+        # Clear the session after deletion
+        session.pop('user', None)
+        session.pop('user_type', None)
+        flash("Your account has been deleted.", "success")
+        return redirect(url_for('home'))
+    
+    # Render a confirmation page for account deletion
+    return render_template('delete_account_confirm.html')
+
+
+# ------------------ Logout ------------------
 
 @app.route('/logout')
 def logout():
-    session.pop('user_email', None)
-    return redirect(url_for('index'))
+    session.pop('user', None)
+    session.pop('user_type', None)
+    flash("Logged out successfully!", "success")
+    return redirect(url_for('home'))
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+# ------------------ Run App ------------------
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0", port=8080)
+    app.run(debug=True)

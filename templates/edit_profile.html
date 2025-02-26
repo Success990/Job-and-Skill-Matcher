@@ -8,34 +8,40 @@
 </head>
 <body>
   <div class="container">
-    <header>
-      <h1>Edit Profile</h1>
-      <p>Update your profile information below.</p>
-    </header>
-    
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <p class="{{ category }}">{{ message }}</p>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-    
-    <form action="/edit_profile" method="POST" class="edit-profile-form">
-      {% if user.user_type == 'job_seeker' %}  
-        <label>Full Name:</label>
-        <input type="text" name="full_name" value="{{ user.full_name }}" required><br>
-        <label>Phone Number:</label>
-        <input type="text" name="phone_number" value="{{ user.phone_number }}" required><br>
-        <label>Job Interest:</label>
-        <input type="text" name="job_interest" value="{{ user.job_interest }}" required><br>
-        <label>Qualification:</label>
-        <input type="text" name="qualification" value="{{ user.qualification }}" required><br>
+    <h1>Edit Profile</h1>
+    <form action="/edit_profile" method="POST">
+      {% if user.user_type == 'job_seeker' %}
+        <label for="full_name">Full Name:</label>
+        <input type="text" id="full_name" name="full_name" value="{{ user.full_name }}" required><br>
+        
+        <label for="phone_number">Phone Number:</label>
+        <input type="text" id="phone_number" name="phone_number" value="{{ user.phone_number }}" required><br>
+        
+        <label for="job_interest">Job Interest:</label>
+        <input type="text" id="job_interest" name="job_interest" value="{{ user.job_interest }}" required><br>
+        
+        <label for="qualification">Qualification:</label>
+        <input type="text" id="qualification" name="qualification" value="{{ user.qualification }}" required><br>
       {% else %}  
-        <label>Firm Name:</label>
-        <input type="text" name="firm_name" value="{{ user.full_name }}" required><br>
-        <label>Phone Number:</label>
-        <input type="text" name="phone_number" value="{{ user.phone_number }}" required><br>
-        <label>Firm Description:</label>
-        <textarea name="firm_description" required>{{ user.firm_description }}</textarea><br>
-      {% endif %}\n      <button type="submit" class="btn btn-primary">Update Profile</button>\n    </form>\n    <p><a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a></p>\n  </div>\n</body>\n</html>\n"
+        <label for="firm_name">Firm Name:</label>
+        <input type="text" id="firm_name" name="firm_name" value="{{ user.full_name }}" required><br>
+        
+        <label for="phone_number">Phone Number:</label>
+        <input type="text" id="phone_number" name="phone_number" value="{{ user.phone_number }}" required><br>
+        
+        <label for="firm_description">Firm Description:</label>
+        <textarea id="firm_description" name="firm_description" required>{{ user.firm_description }}</textarea><br>
+      {% endif %}
+
+      <button type="submit" class="btn btn-primary">Update Profile</button>
+    </form>
+
+    <!-- Conditional Back to Dashboard Link --> 
+    {% if user.user_type == 'job_seeker' %}
+      <a href="/job_seeker/dashboard" class="btn btn-secondary">Back to Dashboard</a>
+    {% else %}
+      <a href="/employer/dashboard" class="btn btn-secondary">Back to Dashboard</a>
+    {% endif %}
+  </div>
+</body>
+</html>

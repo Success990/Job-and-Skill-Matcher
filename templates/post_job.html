@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Post Job Vacancy</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h2>Post a Job Vacancy</h2>
+    </header>
+    
+    <section class="job-posting-form">
+      <form action="/post_job" method="POST">
+        <div class="form-group">
+          <label for="vacancy">Job Vacancy:</label>
+          <input type="text" id="vacancy" name="vacancy" placeholder="Enter job vacancy" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="ideal_jobseeker">Ideal Job Seeker (Optional):</label>
+          <textarea id="ideal_jobseeker" name="ideal_jobseeker" placeholder="Describe your ideal candidate"></textarea>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Post Vacancy</button>
+      </form>
+    </section>
+    
+    <footer>
+      <p><a href="/employer/dashboard" class="btn btn-secondary">Back to Dashboard</a></p>
+    </footer>
+  </div>
+</body>
+</html>

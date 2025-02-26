@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirm Account Deletion</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h2>Delete Account</h2>
+      <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+    </header>
+    <section class="delete-confirmation">
+      <form action="/delete_account" method="POST">
+        <button type="submit" class="btn btn-danger">Yes, Delete My Account</button>
+        <a href="{{ url_for('job_seeker_dashboard') if session.get('user_type')=='job_seeker' else url_for('employer_dashboard') }}" class="btn btn-secondary">Cancel</a>
+      </form>
+    </section>
+  </div>
+</body>
+</html>
