@@ -161,9 +161,10 @@ def login_job_seeker():
             session['user_type'] = 'job_seeker'
             return redirect(url_for('job_seeker_dashboard'))
         else:
-            flash("Invalid email or password", "danger")
-
+            flash("Invalid email or password", "error")
+            return redirect(url_for('login_job_seeker'))
     return render_template('login_job_seeker.html')
+
 
 @app.route('/login/employer', methods=['GET', 'POST'])
 def login_employer():
@@ -189,6 +190,7 @@ def login_employer():
 @app.route('/job_seeker/dashboard')
 def job_seeker_dashboard():
     if 'user' in session and session.get('user_type') == 'job_seeker':
+        user = session['user']  # Get user details from session
         email = session['user']
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -196,6 +198,8 @@ def job_seeker_dashboard():
         cursor.execute("SELECT * FROM users WHERE email = ? AND user_type = 'job_seeker'", (email,))
         user = cursor.fetchone()
         # Fetch all vacancies irrespective of qualifications\n             cursor.execute("SELECT * FROM vacancies")\n             vacancies = cursor.fetchall()\n             conn.close()\n             return render_template('job_seeker_dashboard.html', user=user, vacancies=vacancies)\n         return redirect(url_for('login_job_seeker'))\n     ```
+        return render_template('job_seeker_dashboard.html', user=user)
+    return redirect(url_for('login_job_seeker'))
 
 
 @app.route('/employer/dashboard')
