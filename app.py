@@ -192,14 +192,10 @@ def job_seeker_dashboard():
         email = session['user']
         conn = get_db_connection()
         cursor = conn.cursor()
+        # Retrieve job seeker details
         cursor.execute("SELECT * FROM users WHERE email = ? AND user_type = 'job_seeker'", (email,))
         user = cursor.fetchone()
-        # Fetch vacancies for the job seeker (or you can filter based on criteria later)
-        cursor.execute("SELECT * FROM vacancies")
-        vacancies = cursor.fetchall()
-        conn.close()
-        return render_template('job_seeker_dashboard.html', user=user, vacancies=vacancies)
-    return redirect(url_for('login_job_seeker'))
+        # Fetch all vacancies irrespective of qualifications\n             cursor.execute("SELECT * FROM vacancies")\n             vacancies = cursor.fetchall()\n             conn.close()\n             return render_template('job_seeker_dashboard.html', user=user, vacancies=vacancies)\n         return redirect(url_for('login_job_seeker'))\n     ```
 
 
 @app.route('/employer/dashboard')

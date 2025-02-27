@@ -10,40 +10,16 @@
   <div class="container">
     <header>
       <h1>Welcome, {{ user.full_name }}!</h1>
-      <p><strong>Role:</strong> Job Seeker</p>
       <p><strong>Email:</strong> {{ user.email }}</p>
-      <p><strong>Phone:</strong> {{ user.phone_number }}</p>
     </header>
-
-    <!-- Notifications Section -->
-    <section class="notifications">
-      <h2>Job Notifications</h2>
-      {% if job_notifications %}
+    
+    <section class="vacancies">
+      <h2>Available Job Vacancies</h2>
+      {% if vacancies and vacancies|length > 0 %} 
         <ul>
-          {% for job in job_notifications %}
+          {% for job in vacancies %}
             <li>
-              <strong>{{ job.firm_name }}</strong> - {{ job.firm_description }} <br>
-              <strong>Job Vacancy:</strong> {{ job.vacancy }}
-              <form action="{{ url_for('apply_for_job') }}" method="POST">
-                <input type="hidden" name="vacancy_id" value="{{ job.id }}">
-                <button type="submit" name="action" value="accept">Accept</button>
-                <button type="submit" name="action" value="decline">Decline</button>
-              </form>
-            </li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p>No new job vacancies at the moment.</p>
-      {% endif %}
-    </section>
-
-    <!-- Actions -->
-<section class="actions">
-    <p><a href="/edit_profile" class="btn btn-primary">Edit Profile</a></p>
-    <p><a href="/logout" class="btn btn-secondary">Log Out</a></p>
-    <p><a href="/delete_account" class="btn btn-danger">Delete Account</a></p>
-</section>
-  
-  </div>
-</body>
-</html>
+              <strong>Firm:</strong> {{ job.firm_name }}<br>
+              <strong>Description:</strong> {{ job.firm_description }}<br>
+              <strong>Vacancy:</strong> {{ job.vacancy }}<br>
+              <form action="/apply/{{ job.id }}" method="POST">\n                     <button type="submit" name="action" value="accept">Accept</button>\n                     <button type="submit" name="action" value="decline">Decline</button>\n                   </form>\n                 </li>\n               {% endfor %}\n             </ul>\n           {% else %}\n             <p>No vacancies available at the moment.</p>\n           {% endif %}\n         </section>\n         \n         <footer>\n           <p><a href=\"/edit_profile\" class=\"btn btn-primary\">Edit Profile</a></p>\n           <p><a href=\"/logout\" class=\"btn btn-secondary\">Log Out</a></p>\n         </footer>\n       </div>\n     </body>\n     </html>\n     ```
