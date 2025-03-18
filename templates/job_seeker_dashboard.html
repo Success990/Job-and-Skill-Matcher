@@ -22,4 +22,23 @@
               <strong>Firm:</strong> {{ job.firm_name }}<br>
               <strong>Description:</strong> {{ job.firm_description }}<br>
               <strong>Vacancy:</strong> {{ job.vacancy }}<br>
-              <form action="/apply/{{ job.id }}" method="POST">\n                     <button type="submit" name="action" value="accept">Accept</button>\n                     <button type="submit" name="action" value="decline">Decline</button>\n                   </form>\n                 </li>\n               {% endfor %}\n             </ul>\n           {% else %}\n             <p>No vacancies available at the moment.</p>\n           {% endif %}\n         </section>\n         \n         <footer>\n           <p><a href=\"/edit_profile\" class=\"btn btn-primary\">Edit Profile</a></p>\n           <p><a href=\"/logout\" class=\"btn btn-secondary\">Log Out</a></p>\n         </footer>\n       </div>\n     </body>\n     </html>\n     ```
+              <form action="/apply/{{ job.id }}" method="POST">
+                <button type="submit" name="action" value="accept">Accept</button>
+                <button type="submit" name="action" value="decline">Decline</button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No vacancies available at the moment.</p>
+      {% endif %}
+    </section>
+    
+    <footer>
+      <p><a href="/edit_profile" class="btn btn-primary">Edit Profile</a></p>
+      <p><a href="/logout" class="btn btn-secondary">Log Out</a></p>
+      <p><a href="/delete_account" class="btn btn-danger">Delete Account</a></p> <!-- Account Deletion Link -->
+    </footer>
+  </div>
+</body>
+</html>

@@ -8,6 +8,18 @@
 </head>
 <body>
   <div class="container">
+    
+    <!-- Flash messages block -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages">
+          {% for category, message in messages %}
+            <p class="{{ category }}">{{ message }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    
     <header>
       <h1>Welcome, {{ user.full_name }}!</h1>
       <p><strong>Role:</strong> Employer</p>
@@ -19,45 +31,42 @@
     <section class="job-posting">
       <h2>Post a Job Vacancy</h2>
       <form action="/post_job" method="POST">
-        <label for="job_title">Job Title:</label>
-        <input type="text" id="job_title" name="job_title" required>
-        
-        <label for="job_description">Job Description:</label>
-        <textarea id="job_description" name="job_description" required></textarea>
-        
-        <label for="ideal_candidate">Ideal Candidate (Optional):</label>
-        <textarea id="ideal_candidate" name="ideal_candidate"></textarea>
-        
+        <div class="form-group">
+          <label for="vacancy">Job Vacancy:</label>
+          <input type="text" id="vacancy" name="vacancy" placeholder="Enter job vacancy" required>
+        </div>
+        <div class="form-group">
+          <label for="ideal_jobseeker">Ideal Job Seeker (Optional):</label>
+          <textarea id="ideal_jobseeker" name="ideal_jobseeker" placeholder="Describe your ideal candidate"></textarea>
+        </div>
         <button type="submit" class="btn btn-primary">Post Job</button>
       </form>
     </section>
     
-    <!-- Notification Tab: Interested Job Seekers -->
+    <!-- Notifications: Interested Job Seekers -->
     <section class="notifications">
       <h2>Interested Job Seekers</h2>
-      {% if interested_seekers and interested_seekers|length > 0 %} 
+      {% if applications and applications|length > 0 %}
         <ul>
-          {% for seeker in interested_seekers %}
+          {% for app in applications %}
             <li>
-              <strong>{{ seeker.full_name }}</strong> - {{ seeker.qualification }}<br>
-              <strong>Phone:</strong> {{ seeker.phone_number }}<br>
-              <strong>Email:</strong> {{ seeker.email }}
+              <strong>{{ app.job_seeker_name }}</strong> - {{ app.qualification }}<br>
+              <strong>Phone:</strong> {{ app.phone_number }}<br>
+              <strong>Email:</strong> {{ app.job_seeker_email }}
             </li>
           {% endfor %}
         </ul>
-      {% else %} 
+      {% else %}
         <p>No job seekers have shown interest yet.</p>
       {% endif %}
     </section>
     
     <!-- Other Actions -->
-<section class="actions">
-  <p><a href="/edit_profile" class="btn btn-primary">Edit Profile</a></p>
-  <p><a href="/post_job" class="btn btn-primary">Post a Job Vacancy</a></p>
-  <p><a href="/logout" class="btn btn-secondary">Log Out</a></p>
-  <p><a href="/delete_account" class="btn btn-danger">Delete Account</a></p>
-</section>
-
+    <section class="actions">
+      <p><a href="/edit_profile" class="btn btn-primary">Edit Profile</a></p>
+      <p><a href="/logout" class="btn btn-secondary">Log Out</a></p>
+      <p><a href="/delete_account" class="btn btn-danger">Delete Account</a></p>
+    </section>
   </div>
 </body>
 </html>
