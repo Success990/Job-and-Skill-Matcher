@@ -187,7 +187,6 @@ def login_employer():
     return render_template('login_employer.html')
 
 # ------------------ Dashboards ------------------
-
 @app.route('/job_seeker/dashboard')
 def job_seeker_dashboard():
     if 'user' in session and session.get('user_type') == 'job_seeker':
@@ -199,12 +198,15 @@ def job_seeker_dashboard():
         cursor.execute("SELECT * FROM users WHERE email = ? AND user_type = 'job_seeker'", (email,))
         user = cursor.fetchone()
         
-        # Exclude vacancies the user has responded to
+        # Exclude vacancies the job seeker has already responded to or deleted
         cursor.execute('''
             SELECT v.* 
             FROM vacancies v
-            LEFT JOIN applications a ON v.id = a.vacancy_id AND a.job_seeker_email = ?
-            WHERE a.status IS NULL
+            WHERE v.id NOT IN (
+                SELECT vacancy_id 
+                FROM applications 
+                WHERE job_seeker_email = ?
+            )
         ''', (email,))
         vacancies = cursor.fetchall()
         
@@ -285,48 +287,49 @@ def post_job():
 def apply(vacancy_id):
     if 'user' not in session or session.get('user_type') != 'job_seeker':
         return redirect(url_for('choose_login'))
-    
-    action = request.form.get('action')  # 'accept' or 'decline'
+
+    action = request.form.get('action')  # 'apply' or 'delete'
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     # Get job seeker info
     cursor.execute("SELECT * FROM users WHERE email = ? AND user_type = 'job_seeker'", (session['user'],))
     job_seeker = cursor.fetchone()
-    # Get vacancy info
+
+    if action == "delete":
+        # Record deletion for this user only
+        cursor.execute('''
+            INSERT INTO deleted_vacancies (job_seeker_email, vacancy_id) VALUES (?, ?)
+        ''', (job_seeker['email'], vacancy_id))
+        conn.commit()
+        conn.close()
+        flash("Vacancy removed from your list.", "info")
+        return redirect(url_for('job_seeker_dashboard'))
+
+    # If applying
     cursor.execute("SELECT * FROM vacancies WHERE id = ?", (vacancy_id,))
     vacancy = cursor.fetchone()
-    
+
     if not vacancy:
         flash("Job vacancy not found.", "error")
         conn.close()
         return redirect(url_for('job_seeker_dashboard'))
-    
-    # Insert or update an application record with 'accepted' or 'declined' status
-    status = "accepted" if action == "accept" else "declined"
-    
+
     cursor.execute('''
-        INSERT INTO applications (job_seeker_email, job_seeker_name, qualification, phone_number, vacancy_id, employer_email, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO applications (
+            job_seeker_email, job_seeker_name, qualification, phone_number, vacancy_id, employer_email, status
+        )
+        VALUES (?, ?, ?, ?, ?, ?, 'applied')
     ''', (
-        job_seeker['email'], 
-        job_seeker['full_name'], 
-        job_seeker['qualification'], 
-        job_seeker['phone_number'],
-        vacancy_id, 
-        vacancy['employer_email'],
-        status
+        job_seeker['email'], job_seeker['full_name'], job_seeker['qualification'],
+        job_seeker['phone_number'], vacancy_id, vacancy['employer_email']
     ))
-    
+
     conn.commit()
     conn.close()
-    
-    if status == "accepted":
-        flash("You have applied for the job successfully!", "success")
-    else:
-        flash("You declined the job offer.", "info")
-    
+    flash("You have successfully applied for the job!", "success")
     return redirect(url_for('job_seeker_dashboard'))
+
 
 
 @app.route('/edit_profile', methods=['GET', 'POST'])

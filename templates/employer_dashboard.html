@@ -4,11 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Employer Dashboard</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Open+Sans&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <div class="container">
-    
+
     <!-- Flash messages block -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -19,16 +21,16 @@
         </div>
       {% endif %}
     {% endwith %}
-    
+
     <header>
       <h1>Welcome, {{ user.full_name }}!</h1>
       <p><strong>Role:</strong> Employer</p>
       <p><strong>Email:</strong> {{ user.email }}</p>
       <p><strong>Phone:</strong> {{ user.phone_number }}</p>
     </header>
-    
+
     <!-- Job Vacancy Posting Form -->
-    <section class="job-posting">
+    <section>
       <h2>Post a Job Vacancy</h2>
       <form action="/post_job" method="POST">
         <div class="form-group">
@@ -42,9 +44,9 @@
         <button type="submit" class="btn btn-primary">Post Job</button>
       </form>
     </section>
-    
+
     <!-- Notifications: Interested Job Seekers -->
-    <section class="notifications">
+    <section>
       <h2>Interested Job Seekers</h2>
       {% if applications and applications|length > 0 %}
         <ul>
@@ -60,13 +62,14 @@
         <p>No job seekers have shown interest yet.</p>
       {% endif %}
     </section>
-    
+
     <!-- Other Actions -->
-    <section class="actions">
+    <section class="login-options">
       <p><a href="/edit_profile" class="btn btn-primary">Edit Profile</a></p>
       <p><a href="/logout" class="btn btn-secondary">Log Out</a></p>
       <p><a href="/delete_account" class="btn btn-danger">Delete Account</a></p>
     </section>
+
   </div>
 </body>
 </html>

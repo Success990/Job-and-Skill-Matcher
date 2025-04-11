@@ -4,15 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Job & Skill Matcher</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Open+Sans&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <div class="container">
     <h1>Welcome to the Job & Skill Matcher!</h1>
-    <p>
-      <a href="/choose_signup">Sign Up</a> | 
-      <a href="/choose_login">Login</a>
-    </p>
+    <div class="login-options">
+      <a href="/choose_signup" class="btn btn-primary">Sign Up</a>
+      <a href="/choose_login" class="btn btn-secondary">Login</a>
+    </div>
   </div>
 </body>
 </html>

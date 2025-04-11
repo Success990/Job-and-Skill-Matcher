@@ -4,33 +4,36 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Edit Profile</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Open+Sans&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <div class="container">
     <h1>Edit Profile</h1>
+
     <form action="/edit_profile" method="POST">
       {% if user.user_type == 'job_seeker' %}
         <label for="full_name">Full Name:</label>
-        <input type="text" id="full_name" name="full_name" value="{{ user.full_name }}" required><br>
+        <input type="text" id="full_name" name="full_name" value="{{ user.full_name }}" required>
         
         <label for="phone_number">Phone Number:</label>
-        <input type="text" id="phone_number" name="phone_number" value="{{ user.phone_number }}" required><br>
+        <input type="text" id="phone_number" name="phone_number" value="{{ user.phone_number }}" required>
         
         <label for="job_interest">Job Interest:</label>
-        <input type="text" id="job_interest" name="job_interest" value="{{ user.job_interest }}" required><br>
+        <input type="text" id="job_interest" name="job_interest" value="{{ user.job_interest }}" required>
         
         <label for="qualification">Qualification:</label>
-        <input type="text" id="qualification" name="qualification" value="{{ user.qualification }}" required><br>
+        <input type="text" id="qualification" name="qualification" value="{{ user.qualification }}" required>
       {% else %}  
         <label for="firm_name">Firm Name:</label>
-        <input type="text" id="firm_name" name="firm_name" value="{{ user.full_name }}" required><br>
+        <input type="text" id="firm_name" name="firm_name" value="{{ user.full_name }}" required>
         
         <label for="phone_number">Phone Number:</label>
-        <input type="text" id="phone_number" name="phone_number" value="{{ user.phone_number }}" required><br>
+        <input type="text" id="phone_number" name="phone_number" value="{{ user.phone_number }}" required>
         
         <label for="firm_description">Firm Description:</label>
-        <textarea id="firm_description" name="firm_description" required>{{ user.firm_description }}</textarea><br>
+        <textarea id="firm_description" name="firm_description" required>{{ user.firm_description }}</textarea>
       {% endif %}
 
       <button type="submit" class="btn btn-primary">Update Profile</button>

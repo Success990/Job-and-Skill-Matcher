@@ -4,23 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Choose Signup</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Open+Sans&display=swap" rel="stylesheet">
+
+  <!-- Global Styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+
   <div class="container">
     <header>
-      <h2>Sign Up</h2>
-      <p>Please choose your signup type:</p>
+      <h2 class="intro-text">Sign Up</h2>
+      <p class="intro-text">Please choose your signup type:</p>
     </header>
-    
-    <section class="signup-options">
+
+    <section class="login-options">
       <p><a href="/signup/job_seeker" class="btn btn-primary">Job Seeker Signup</a></p>
       <p><a href="/signup/employer" class="btn btn-secondary">Employer Signup</a></p>
     </section>
-    
-    <footer>
+
+    <footer class="signup-link">
       <p>Already have an account? <a href="/choose_login">Login here</a></p>
     </footer>
   </div>
+
 </body>
 </html>

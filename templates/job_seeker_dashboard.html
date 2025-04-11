@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Job Seeker Dashboard</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Open+Sans&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -22,10 +24,12 @@
               <strong>Firm:</strong> {{ job.firm_name }}<br>
               <strong>Description:</strong> {{ job.firm_description }}<br>
               <strong>Vacancy:</strong> {{ job.vacancy }}<br>
-              <form action="/apply/{{ job.id }}" method="POST">
-                <button type="submit" name="action" value="accept">Accept</button>
-                <button type="submit" name="action" value="decline">Decline</button>
+              <form action="/apply/{{ job.id }}" method="POST" class="form-inline">
+                <button type="submit" name="action" value="apply" class="btn btn-primary">Apply</button>
+                <button type="submit" name="action" value="delete" class="btn btn-danger">Delete</button>
               </form>
+              
+          
             </li>
           {% endfor %}
         </ul>
@@ -34,10 +38,10 @@
       {% endif %}
     </section>
     
-    <footer>
+    <footer class="dashboard-actions">
       <p><a href="/edit_profile" class="btn btn-primary">Edit Profile</a></p>
       <p><a href="/logout" class="btn btn-secondary">Log Out</a></p>
-      <p><a href="/delete_account" class="btn btn-danger">Delete Account</a></p> <!-- Account Deletion Link -->
+      <p><a href="/delete_account" class="btn btn-danger">Delete Account</a></p>
     </footer>
   </div>
 </body>

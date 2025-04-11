@@ -1,61 +1,185 @@
 /* style.css */
 
-/* Global Styles */
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&family=Montserrat:wght@600&display=swap');
+
+/* ------------------- Global Styles ------------------- */
 body {
-    background-color: #e0f7fa;  /* Light cyan background (blueish) */
-    font-family: Arial, sans-serif;
-    color: #333;
-    margin: 0;
-    padding: 0;
-  }
-  
-  /* Headings */
-  h1, h2 {
-    color: #00796b;  /* Teal green for headings */
-    text-align: center;
-  }
-  
-  /* Links */
-  a {
-    color: #1565c0;  /* Blue for links */
-    text-decoration: none;
-  }
-  
-  a:hover {
-    text-decoration: underline;
-  }
-  
-  /* Container */
-  .container {
-    width: 80%;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: #b3e5fc;  /* Light blue container background */
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  }
-  
-  /* Form Styles */
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  input, button {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
-  /* Button Styles */
-  button {
-    background-color: #00796b;  /* Teal green button */
-    color: #fff;
-    border: none;
-    cursor: pointer;
-  }
-  
-  button:hover {
-    background-color: #004d40;  /* Darker green on hover */
-  }
-  
+  background-color: #f0f8ff;
+  font-family: 'Open Sans', sans-serif;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+h1, h2, h3 {
+  font-family: 'Montserrat', sans-serif;
+  color: #00796b;
+  text-align: center;
+  margin-top: 30px;
+  margin-bottom: 20px;
+  font-size: 2rem;
+}
+
+.intro-text {
+  font-size: 1.1rem;
+  text-align: center;
+  color: #555;
+}
+
+/* ------------------- Links ------------------- */
+a {
+  color: #1565c0;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ------------------- Container ------------------- */
+.container {
+  width: 85%;
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 25px;
+  background-color: #ffffff;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+/* ------------------- Section Layout ------------------- */
+section {
+  margin-bottom: 40px;
+  padding: 20px;
+}
+
+/* ------------------- Paragraphs and Lists ------------------- */
+p, li {
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+/* ------------------- Form Styles ------------------- */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+input, textarea, select, button {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+textarea {
+  resize: vertical;
+}
+
+/* ------------------- Button Styles ------------------- */
+button, .btn {
+  padding: 12px 25px;
+  font-size: 1rem;
+  border-radius: 5px;
+  text-align: center;
+  display: inline-block;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: bold;
+  border: none;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+button {
+  background-color: #00796b;
+  color: white;
+}
+
+button:hover, .btn:hover {
+  background-color: #004d40;
+  transform: translateY(-2px);
+}
+
+.btn-primary {
+  background-color: #00796b;
+  color: white;
+}
+
+.btn-secondary {
+  background-color: #1565c0;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #003c8f;
+}
+
+.btn-danger {
+  background-color: #c62828;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #8e0000;
+}
+
+/* ------------------- Login & Signup Options ------------------- */
+.login-options, .signup-options {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+}
+
+/* ------------------- Flash/Error Messages ------------------- */
+.flash-message {
+  padding: 12px 20px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.flash-error {
+  background-color: #ffebee;
+  color: #e53935;
+  border: 1px solid #e53935;
+}
+
+.flash-success {
+  background-color: #d0f0c0;
+  color: #2e7d32;
+  border: 1px solid #2e7d32;
+}
+
+
+/* ------------------- Footer ------------------- */
+footer {
+  text-align: center;
+  margin-top: 40px;
+  padding: 10px;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.signup-link a {
+  color: #00796b;
+  font-weight: bold;
+}
+
+.signup-link a:hover {
+  text-decoration: underline;
+}
+
+/* ------------------- Dashboard Custom Sections ------------------- */
+.job-posting, .notifications, .actions {
+  margin-top: 30px;
+}
+
+.actions a {
+  margin: 10px 5px;
+  display: inline-block;
+}

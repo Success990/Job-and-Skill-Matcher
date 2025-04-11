@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Job Seeker Signup</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Open+Sans&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -13,14 +15,14 @@
       <p>Create your account to find your next opportunity.</p>
     </header>
     
-    <!-- Flash messages for errors or success -->
+    <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        <section class="flash-messages">
+        <div class="flash-messages">
           {% for category, message in messages %}
             <p class="{{ category }}">{{ message }}</p>
           {% endfor %}
-        </section>
+        </div>
       {% endif %}
     {% endwith %}
     
@@ -53,7 +55,7 @@
         
         <div class="form-group">
           <label for="qualification">Qualification:</label>
-          <input type="text" id="qualification" name="qualification" placeholder="Your Job qualification" required>
+          <input type="text" id="qualification" name="qualification" placeholder="Your qualification" required>
         </div>
         
         <button type="submit" class="btn btn-primary">Sign Up</button>
@@ -66,3 +68,4 @@
   </div>
 </body>
 </html>
+
