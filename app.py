@@ -89,7 +89,15 @@ def signup_job_seeker():
         email = request.form['email'].lower()
         password = request.form['password']
         phone_number = request.form['phone_number']
-        job_interest = request.form['job_interest']
+        job_interests = request.form.getlist('job_interest[]')  # List of selected options
+        other_interest = request.form.get('other_job_interest', '').strip()
+
+        # Combine selected interests with custom ones (if any)
+        if other_interest:
+            job_interests.append(other_interest)
+
+        # Store as a comma-separated string (or adjust if storing differently)
+        job_interest = ', '.join(job_interests)
         qualification = request.form['qualification']
 
         if len(password) < 8 or not any(char.isdigit() for char in password):
@@ -111,6 +119,7 @@ def signup_job_seeker():
             conn.close()
 
     return render_template('signup_job_seeker.html')
+
 
 @app.route('/signup/employer', methods=['GET', 'POST'])
 def signup_employer():

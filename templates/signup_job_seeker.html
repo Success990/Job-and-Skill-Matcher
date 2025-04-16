@@ -1,12 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Job Seeker Signup</title>
+
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Open+Sans&display=swap" rel="stylesheet">
+  
+  <!-- Your stylesheet -->
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+  <!-- Select2 CSS (for searchable and styled select) -->
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+  <style>
+    /* Custom Select2 style for selected options */
+    .select2-container--default .select2-results__option--selected::before {
+      content: "✔";
+      color: green;
+      margin-right: 8px;
+    }
+    .select2-container--default .select2-selection--multiple {
+      border-radius: 4px;
+      padding: 6px;
+      border: 1px solid #ccc;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+      background-color: #007bff;
+      border: none;
+      color: white;
+      font-size: 13px;
+      padding: 4px 8px;
+      margin-top: 4px;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -14,7 +42,7 @@
       <h2>Job Seeker Signup</h2>
       <p>Create your account to find your next opportunity.</p>
     </header>
-    
+
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -25,47 +53,138 @@
         </div>
       {% endif %}
     {% endwith %}
-    
+
     <section class="signup-form">
       <form action="/signup/job_seeker" method="POST">
         <div class="form-group">
           <label for="full_name">Full Name:</label>
           <input type="text" id="full_name" name="full_name" placeholder="Enter your full name" required>
         </div>
-        
+
         <div class="form-group">
           <label for="email">Email Address (lowercase only):</label>
           <input type="email" id="email" name="email" placeholder="Enter your email in lowercase" required>
         </div>
-        
+
         <div class="form-group">
           <label for="password">Password:</label>
           <input type="password" id="password" name="password" placeholder="At least 8 characters, 1 number" required>
         </div>
-        
+
         <div class="form-group">
           <label for="phone_number">Phone Number:</label>
           <input type="text" id="phone_number" name="phone_number" placeholder="Enter your phone number" required>
         </div>
-        
+
         <div class="form-group">
-          <label for="job_interest">Job Interest:</label>
-          <input type="text" id="job_interest" name="job_interest" placeholder="Your job of interest" required>
+          <label for="job_interest">Job Interest(s):</label>
+          <select id="job_interest" name="job_interest[]" multiple="multiple" required>
+            <option value="Doctor">Doctor</option>
+            <option value="Cashier">Cashier</option>
+            <option value="Janitor">Janitor</option>
+            <option value="Bartender">Bartender</option>
+            <option value="Server">Server</option>
+            <option value="Construction worker">Construction worker</option>
+            <option value="Customer Care representative">Customer Care representative</option>
+            <option value="Office Clerk">Office Clerk</option>
+            <option value="Engineers">Engineers</option>
+            <option value="Dentist">Dentist</option>
+            <option value="Mechanic">Mechanic</option>
+            <option value="Carpenter">Carpenter</option>
+            <option value="Electrician">Electrician</option>
+            <option value="Police Officer">Police Officer</option>
+            <option value="Marketing Specialist">Marketing Specialist</option>
+            <option value="Lawyer">Lawyer</option>
+            <option value="Software Developer">Software Developer</option>
+            <option value="Web developer">Web developer</option>
+            <option value="Content Creator">Content Creator</option>
+            <option value="Graphic Designer">Graphic Designer</option>
+            <option value="Teacher">Teacher</option>
+            <option value="Caterer">Caterer</option>
+            <option value="Other">Other</option>
+          </select>
+          <small>Select one or more job interests. Use click to select.</small>
         </div>
-        
+
+        <div class="form-group" id="otherJobInterestDiv" style="display: none;">
+          <label for="other_job_interest">Other Job Interest(s):</label>
+          <input type="text" id="other_job_interest" name="other_job_interest" placeholder="Separate with commas if more than one">
+        </div>
+
+        <!-- Qualification Dropdown -->
         <div class="form-group">
           <label for="qualification">Qualification:</label>
-          <input type="text" id="qualification" name="qualification" placeholder="Your qualification" required>
+          <select id="qualification" name="qualification" required>
+            <option value="Senior Secondary School Graduate (WAEC/NECO)">Senior Secondary School Graduate (WAEC/NECO)</option>
+            <option value="Vocational/Technical Certificate (e.g., NABTEB, Trade Test, Computer Training)">Vocational/Technical Certificate (e.g., NABTEB, Trade Test, Computer Training)</option>
+            <option value="National Diploma (ND) / Ordinary National Diploma (OND)">National Diploma (ND) / Ordinary National Diploma (OND)</option>
+            <option value="NCE (Nigeria Certificate in Education)">NCE (Nigeria Certificate in Education)</option>
+            <option value="Advanced Level Certificate (A-Level, IJMB, etc.)">Advanced Level Certificate (A-Level, IJMB, etc.)</option>
+            <option value="Higher National Diploma (HND)">Higher National Diploma (HND)</option>
+            <option value="Bachelor’s Degree (BSc, BA, BEng, etc.)">Bachelor’s Degree (BSc, BA, BEng, etc.)</option>
+            <option value="Postgraduate Diploma (PGD)">Postgraduate Diploma (PGD)</option>
+            <option value="Master’s Degree (MSc, MA, MBA, etc.)">Master’s Degree (MSc, MA, MBA, etc.)</option>
+            <option value="Doctorate / PhD">Doctorate / PhD</option>
+            <option value="Postdoctoral Fellowship">Postdoctoral Fellowship</option>
+            <option value="No Formal Education">No Formal Education</option>
+            <option value="Other">Other</option>
+          </select>
+          <small>Select your qualification or choose 'Other' if not listed.</small>
         </div>
-        
+
+        <!-- Other Qualification Input (shown when "Other" is selected) -->
+        <div class="form-group" id="otherQualificationDiv" style="display: none;">
+          <label for="other_qualification">Other Qualification(s):</label>
+          <input type="text" id="other_qualification" name="other_qualification" placeholder="Enter your qualification if not listed">
+        </div>
+
         <button type="submit" class="btn btn-primary">Sign Up</button>
       </form>
     </section>
-    
+
     <footer>
       <p>Already have an account? <a href="/choose_login">Login here</a></p>
     </footer>
   </div>
+
+  <!-- jQuery (needed for Select2) -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- Select2 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+  <script>
+    function toggleOtherJobInterest() {
+      const selectedValues = $('#job_interest').val() || [];
+      const showOther = selectedValues.includes('Other');
+      document.getElementById('otherJobInterestDiv').style.display = showOther ? 'block' : 'none';
+    }
+
+    function toggleOtherQualification() {
+      const selectedQualification = $('#qualification').val();
+      const showOther = selectedQualification === 'Other';
+      document.getElementById('otherQualificationDiv').style.display = showOther ? 'block' : 'none';
+    }
+
+    $(document).ready(function () {
+      // Initialize Select2 for job interests and qualifications
+      $('#job_interest').select2({
+        placeholder: 'Select job interests',
+        width: '100%',
+        closeOnSelect: false
+      });
+
+      $('#qualification').select2({
+        placeholder: 'Select qualification',
+        width: '80%',
+      });
+
+      // Bind change event to toggle visibility of "Other" input fields
+      $('#job_interest').on('change', toggleOtherJobInterest);
+      $('#qualification').on('change', toggleOtherQualification);
+
+      toggleOtherJobInterest();  // Run on page load
+      toggleOtherQualification();  // Run on page load
+    });
+  </script>
 </body>
 </html>
-

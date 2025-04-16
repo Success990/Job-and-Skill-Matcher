@@ -13,6 +13,12 @@
     <header>
       <h1>Welcome, {{ user.full_name }}!</h1>
       <p><strong>Email:</strong> {{ user.email }}</p>
+      <p><strong>Job Interests:</strong></p>
+      <ul>
+        {% for interest in user.job_interest.split(',') %}
+          <li>{{ interest.strip() }}</li>
+        {% endfor %}
+      </ul>
     </header>
     
     <section class="vacancies">
@@ -28,8 +34,6 @@
                 <button type="submit" name="action" value="apply" class="btn btn-primary">Apply</button>
                 <button type="submit" name="action" value="delete" class="btn btn-danger">Delete</button>
               </form>
-              
-          
             </li>
           {% endfor %}
         </ul>
