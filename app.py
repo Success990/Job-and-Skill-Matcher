@@ -1,26 +1,29 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import timedelta
-
+import os
+import psycopg2
+import psycopg2.extras
 
 app = Flask(__name__)
 app.secret_key = "your-secret-key"  # Change this in production
 app.permanent_session_lifetime = timedelta(days=30)
 
 # Database helper functions
+
 def get_db_connection():
-    conn = sqlite3.connect("users.db", timeout=10)
-    conn.row_factory = sqlite3.Row
+    db_url = os.environ.get('DATABASE_URL')
+    conn = psycopg2.connect(db_url, cursor_factory=psycopg2.extras.RealDictCursor)
     return conn
 
-def init_db():
+def init_db(): 
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     # Create users table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             user_type TEXT NOT NULL,
             full_name TEXT NOT NULL,
             email TEXT UNIQUE NOT NULL,
@@ -35,7 +38,7 @@ def init_db():
     # Create vacancies table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS vacancies (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             employer_email TEXT NOT NULL,
             firm_name TEXT NOT NULL,
             firm_description TEXT NOT NULL,
@@ -45,10 +48,10 @@ def init_db():
         )
     ''')
     
-    # Create applications table (added `status` column)
+    # Create applications table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS applications (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             job_seeker_email TEXT NOT NULL,
             job_seeker_name TEXT NOT NULL,
             qualification TEXT NOT NULL,
@@ -60,11 +63,20 @@ def init_db():
             FOREIGN KEY (vacancy_id) REFERENCES vacancies (id)
         )
     ''')
-    
-    conn.commit()
-    conn.close()
+            # Create deleted_vacancies table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS deleted_vacancies (
+            id SERIAL PRIMARY KEY,
+            job_seeker_email TEXT NOT NULL,
+            vacancy_id INTEGER NOT NULL,
+            FOREIGN KEY (job_seeker_email) REFERENCES users (email),
+            FOREIGN KEY (vacancy_id) REFERENCES vacancies (id)
+        )
+    ''')
 
-init_db()
+    conn.commit()
+    cursor.close()
+    conn.close()
 
 # ------------------ Routes ------------------
 
@@ -96,7 +108,7 @@ def signup_job_seeker():
         if other_interest:
             job_interests.append(other_interest)
 
-        # Store as a comma-separated string (or adjust if storing differently)
+        # Store as a comma-separated string
         job_interest = ', '.join(job_interests)
         qualification = request.form['qualification']
 
@@ -107,19 +119,22 @@ def signup_job_seeker():
         hashed_password = generate_password_hash(password)
 
         conn = get_db_connection()
+        cursor = conn.cursor()
         try:
-            conn.execute("INSERT INTO users (user_type, full_name, email, password, phone_number, job_interest, qualification) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                         ('job_seeker', full_name, email, hashed_password, phone_number, job_interest, qualification))
+            cursor.execute(
+                "INSERT INTO users (user_type, full_name, email, password, phone_number, job_interest, qualification) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                ('job_seeker', full_name, email, hashed_password, phone_number, job_interest, qualification)
+            )
             conn.commit()
             flash("Signup successful! You can now log in.", "success")
             return redirect(url_for('login_job_seeker'))
-        except sqlite3.IntegrityError:
+        except psycopg2.IntegrityError:
             flash("Email already exists. Please use a different email.", "danger")
         finally:
+            cursor.close()
             conn.close()
 
     return render_template('signup_job_seeker.html')
-
 
 @app.route('/signup/employer', methods=['GET', 'POST'])
 def signup_employer():
@@ -136,23 +151,23 @@ def signup_employer():
         
         hashed_password = generate_password_hash(password)
         conn = get_db_connection()
+        cursor = conn.cursor()
         try:
-            cursor = conn.cursor()
             cursor.execute('''
                 INSERT INTO users (user_type, full_name, email, password, phone_number, firm_description)
-                VALUES (?, ?, ?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s, %s, %s)
             ''', ("employer", firm_name, email, hashed_password, phone_number, firm_description))
             conn.commit()
             flash("Signup successful! Please log in.", "success")
             return redirect(url_for('login_employer'))
-        except sqlite3.IntegrityError:
+        except psycopg2.IntegrityError:
             flash("Email already exists. Please use a different email.", "error")
             return redirect(url_for('signup_employer'))
         finally:
+            cursor.close()
             conn.close()
     
     return render_template('signup_employer.html')
-
 
 # ------------------ Login ------------------
 
@@ -163,7 +178,13 @@ def login_job_seeker():
         password = request.form['password']
 
         conn = get_db_connection()
-        user = conn.execute("SELECT * FROM users WHERE email = ? AND user_type = 'job_seeker'", (email,)).fetchone()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT * FROM users WHERE email = %s AND user_type = 'job_seeker'",
+            (email,)
+        )
+        user = cursor.fetchone()
+        cursor.close()
         conn.close()
 
         if user and check_password_hash(user['password'], password):
@@ -175,7 +196,6 @@ def login_job_seeker():
             return redirect(url_for('login_job_seeker'))
     return render_template('login_job_seeker.html')
 
-
 @app.route('/login/employer', methods=['GET', 'POST'])
 def login_employer():
     if request.method == 'POST':
@@ -183,7 +203,13 @@ def login_employer():
         password = request.form['password']
 
         conn = get_db_connection()
-        user = conn.execute("SELECT * FROM users WHERE email = ? AND user_type = 'employer'", (email,)).fetchone()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT * FROM users WHERE email = %s AND user_type = 'employer'",
+            (email,)
+        )
+        user = cursor.fetchone()
+        cursor.close()
         conn.close()
 
         if user and check_password_hash(user['password'], password):
@@ -196,6 +222,7 @@ def login_employer():
     return render_template('login_employer.html')
 
 # ------------------ Dashboards ------------------
+
 @app.route('/job_seeker/dashboard')
 def job_seeker_dashboard():
     if 'user' in session and session.get('user_type') == 'job_seeker':
@@ -204,7 +231,7 @@ def job_seeker_dashboard():
         cursor = conn.cursor()
         
         # Retrieve job seeker details
-        cursor.execute("SELECT * FROM users WHERE email = ? AND user_type = 'job_seeker'", (email,))
+        cursor.execute("SELECT * FROM users WHERE email = %s AND user_type = 'job_seeker'", (email,))
         user = cursor.fetchone()
         
         # Exclude vacancies the job seeker has already responded to or deleted
@@ -214,132 +241,111 @@ def job_seeker_dashboard():
             WHERE v.id NOT IN (
                 SELECT vacancy_id 
                 FROM applications 
-                WHERE job_seeker_email = ?
+                WHERE job_seeker_email = %s
             )
         ''', (email,))
         vacancies = cursor.fetchall()
         
+        cursor.close()
         conn.close()
         return render_template('job_seeker_dashboard.html', user=user, vacancies=vacancies)
     return redirect(url_for('login_job_seeker'))
 
-
 @app.route('/employer/dashboard')
 def employer_dashboard():
-    # Check if a user is logged in and is an employer
     if 'user' in session and session.get('user_type') == 'employer':
         email = session['user']
         conn = get_db_connection()
         cursor = conn.cursor()
-        # Retrieve the employer's record
-        cursor.execute("SELECT * FROM users WHERE email = ? AND user_type = ?", (email, "employer"))
+        cursor.execute("SELECT * FROM users WHERE email = %s AND user_type = %s", (email, "employer"))
         user = cursor.fetchone()
         if not user:
+            cursor.close()
             conn.close()
-            # If no user record is found, redirect to login
             return redirect(url_for('login_employer'))
-        # Fetch vacancies posted by this employer
-        cursor.execute("SELECT * FROM vacancies WHERE employer_email = ?", (email,))
+        cursor.execute("SELECT * FROM vacancies WHERE employer_email = %s", (email,))
         vacancies = cursor.fetchall()
-        # Fetch applications for vacancies posted by this employer
-        cursor.execute("SELECT * FROM applications WHERE employer_email = ?", (email,))
+        cursor.execute("SELECT * FROM applications WHERE employer_email = %s", (email,))
         applications = cursor.fetchall()
+        cursor.close()
         conn.close()
         return render_template('employer_dashboard.html', user=user, vacancies=vacancies, applications=applications)
     else:
-        # If the session doesn't have the employer info, redirect to the employer login page
         return redirect(url_for('login_employer'))
 
 @app.route('/post_job', methods=['GET', 'POST'])
 def post_job():
-    # Ensure user is logged in
     if 'user' not in session:
         return redirect(url_for('choose_login'))
-    
     conn = get_db_connection()
     cursor = conn.cursor()
-    
-    # Retrieve employer details based on session email
-    cursor.execute("SELECT * FROM users WHERE email = ?", (session['user'],))
+    cursor.execute("SELECT * FROM users WHERE email = %s", (session['user'],))
     user = cursor.fetchone()
-    
-    # Only employers should post jobs
     if user['user_type'] != 'employer':
         flash("Only employers can post jobs.", "error")
+        cursor.close()
         conn.close()
         return redirect(url_for('employer_dashboard'))
-    
     if request.method == 'POST':
         vacancy = request.form.get('vacancy')
         ideal_jobseeker = request.form.get('ideal_jobseeker', '')
-        
         if not vacancy:
             flash("Vacancy field is required.", "error")
+            cursor.close()
             conn.close()
             return redirect(url_for('post_job'))
-        
-        # Insert the job vacancy into the database
         cursor.execute('''
             INSERT INTO vacancies (employer_email, firm_name, firm_description, vacancy, ideal_jobseeker)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
         ''', (user['email'], user['full_name'], user['firm_description'], vacancy, ideal_jobseeker))
         conn.commit()
         flash("Job posted successfully!", "success")
+        cursor.close()
         conn.close()
         return redirect(url_for('employer_dashboard'))
-    
+    cursor.close()
     conn.close()
     return render_template('post_job.html')
 
-# ------------------ Application Route for Job Seekers ------------------
 @app.route('/apply/<int:vacancy_id>', methods=['POST'])
 def apply(vacancy_id):
     if 'user' not in session or session.get('user_type') != 'job_seeker':
         return redirect(url_for('choose_login'))
-
     action = request.form.get('action')  # 'apply' or 'delete'
     conn = get_db_connection()
     cursor = conn.cursor()
-
-    # Get job seeker info
-    cursor.execute("SELECT * FROM users WHERE email = ? AND user_type = 'job_seeker'", (session['user'],))
+    cursor.execute("SELECT * FROM users WHERE email = %s AND user_type = 'job_seeker'", (session['user'],))
     job_seeker = cursor.fetchone()
-
     if action == "delete":
-        # Record deletion for this user only
-        cursor.execute('''
-            INSERT INTO deleted_vacancies (job_seeker_email, vacancy_id) VALUES (?, ?)
-        ''', (job_seeker['email'], vacancy_id))
+        cursor.execute(
+            "INSERT INTO deleted_vacancies (job_seeker_email, vacancy_id) VALUES (%s, %s)",
+            (job_seeker['email'], vacancy_id)
+        )
         conn.commit()
-        conn.close()
         flash("Vacancy removed from your list.", "info")
+        cursor.close()
+        conn.close()
         return redirect(url_for('job_seeker_dashboard'))
-
-    # If applying
-    cursor.execute("SELECT * FROM vacancies WHERE id = ?", (vacancy_id,))
+    cursor.execute("SELECT * FROM vacancies WHERE id = %s", (vacancy_id,))
     vacancy = cursor.fetchone()
-
     if not vacancy:
         flash("Job vacancy not found.", "error")
+        cursor.close()
         conn.close()
         return redirect(url_for('job_seeker_dashboard'))
-
     cursor.execute('''
         INSERT INTO applications (
             job_seeker_email, job_seeker_name, qualification, phone_number, vacancy_id, employer_email, status
-        )
-        VALUES (?, ?, ?, ?, ?, ?, 'applied')
+        ) VALUES (%s, %s, %s, %s, %s, %s, 'applied')
     ''', (
         job_seeker['email'], job_seeker['full_name'], job_seeker['qualification'],
         job_seeker['phone_number'], vacancy_id, vacancy['employer_email']
     ))
-
     conn.commit()
-    conn.close()
     flash("You have successfully applied for the job!", "success")
+    cursor.close()
+    conn.close()
     return redirect(url_for('job_seeker_dashboard'))
-
-
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
 def edit_profile():
@@ -348,9 +354,8 @@ def edit_profile():
     email = session['user']
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
+    cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
     user = cursor.fetchone()
-    
     if request.method == 'POST':
         if user['user_type'] == 'job_seeker':
             full_name = request.form.get('full_name')
@@ -358,7 +363,7 @@ def edit_profile():
             job_interest = request.form.get('job_interest')
             qualification = request.form.get('qualification')
             cursor.execute(
-                "UPDATE users SET full_name = ?, phone_number = ?, job_interest = ?, qualification = ? WHERE email = ?",
+                "UPDATE users SET full_name = %s, phone_number = %s, job_interest = %s, qualification = %s WHERE email = %s",
                 (full_name, phone_number, job_interest, qualification, email)
             )
         else:  # employer
@@ -366,47 +371,38 @@ def edit_profile():
             phone_number = request.form.get('phone_number')
             firm_description = request.form.get('firm_description')
             cursor.execute(
-                "UPDATE users SET full_name = ?, phone_number = ?, firm_description = ? WHERE email = ?",
+                "UPDATE users SET full_name = %s, phone_number = %s, firm_description = %s WHERE email = %s",
                 (firm_name, phone_number, firm_description, email)
             )
         conn.commit()
-        conn.close()
         flash("Profile updated successfully!", "success")
-        # Redirect based on user type
+        cursor.close()
+        conn.close()
         if user['user_type'] == 'job_seeker':
             return redirect(url_for('job_seeker_dashboard'))
         else:
             return redirect(url_for('employer_dashboard'))
+    cursor.close()
     conn.close()
     return render_template('edit_profile.html', user=user)
-   
+
 @app.route('/delete_account', methods=['GET', 'POST'])
 def delete_account():
-    # Ensure the user is logged in
     if 'user' not in session:
         return redirect(url_for('choose_login'))
-    
     email = session['user']
-    
     if request.method == 'POST':
         conn = get_db_connection()
         cursor = conn.cursor()
-        # Optionally, delete related records in vacancies or applications if needed
-        cursor.execute("DELETE FROM users WHERE email = ?", (email,))
+        cursor.execute("DELETE FROM users WHERE email = %s", (email,))
         conn.commit()
+        cursor.close()
         conn.close()
-        
-        # Clear the session after deletion
         session.pop('user', None)
         session.pop('user_type', None)
         flash("Your account has been deleted.", "success")
         return redirect(url_for('home'))
-    
-    # Render a confirmation page for account deletion
     return render_template('delete_account_confirm.html')
-
-
-# ------------------ Logout ------------------
 
 @app.route('/logout')
 def logout():
@@ -415,7 +411,6 @@ def logout():
     flash("Logged out successfully!", "success")
     return redirect(url_for('home'))
 
-# ------------------ Run App ------------------
-
 if __name__ == '__main__':
+    init_db()
     app.run(debug=True)
